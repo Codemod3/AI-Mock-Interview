@@ -23,6 +23,7 @@ function RecordAnswerSection({mockInterviewQuestion,activeQuestionIndex,intervie
     results,
     startSpeechToText,
     stopSpeechToText,
+    setResults,
   } = useSpeechToText({
     continuous: true,
     useLegacyResults: false
@@ -60,39 +61,62 @@ function RecordAnswerSection({mockInterviewQuestion,activeQuestionIndex,intervie
     
   }
 
-  const UpdateUserAnswer=async()=>{
-    console.log(userAnswer)
-      
-    setLoading(true)
-    const feedbackPrompt="Question"+mockInterviewQuestion[activeQuestionIndex]?.Question+
-        ",user answer:"+userAnswer+"Depends on question and user answer for given interview questions"+
-        "please give us rating for answer and feedback as area of improvement as any"+
-        "in just 3 to 5 lines to improve it in JSON format with rating with field and feebback feed";
+  const UpdateUserAnswer = async () => {
+    console.log(userAnswer);
   
-        const result = await chatSession.sendMessage(feedbackPrompt);
-        const mockJsonResp=(result.response.text()).replace('```json','').replace('```','')
-        console.log(mockJsonResp)
+    setLoading(true);
   
-        const JsonFeedbackResp=JSON.parse(mockJsonResp);
+    const feedbackPrompt = `Question: ${mockInterviewQuestion[activeQuestionIndex]?.Question}, 
+    User Answer: ${userAnswer}. 
+    Please provide a rating and feedback (in 3-5 lines) in JSON format like this: 
+    {"rating": 7, "feedback": "Your answer is good, but you can improve by adding more details."}`;
   
-        const resp=await db.insert(UserAnsere)
-        .values({
-          mockIDRef:interviewData?.mockID,
-          question:mockInterviewQuestion[activeQuestionIndex]?.Question,
-          correctAns:mockInterviewQuestion[activeQuestionIndex]?.answer,
-          userAns:userAnswer,
-          feedback:JsonFeedbackResp?.feedback,
-          rating:JsonFeedbackResp?.rating,
-          userEmail:user?.primaryEmailAddress?.emailAddress,
-          created:moment().format('DD-MM-yyyy')
+    try {
+      const result = await chatSession.sendMessage(feedbackPrompt);
+      let mockJsonResp = await result.response.text(); // Ensure text is awaited
   
-        })
-        if(resp)
-        {
-          toast('User Answerrecorder successfully')
-        }
-        setUserAnswer('');
+      console.log("Raw Response:", mockJsonResp);
+  
+      // ✅ Fix: Clean JSON response
+      mockJsonResp = mockJsonResp.replace(/```json|```/g, "").trim(); 
+  
+      // ✅ Fix: Validate JSON before parsing
+      let JsonFeedbackResp;
+      try {
+        JsonFeedbackResp = JSON.parse(mockJsonResp);
+      } catch (jsonError) {
+        console.error("JSON Parsing Error:", jsonError, "Response:", mockJsonResp);
+        toast("Error processing feedback. Please try again.");
         setLoading(false);
+        return;
+      }
+  
+      console.log("Parsed JSON:", JsonFeedbackResp);
+  
+      // ✅ Database Insert
+      const resp = await db.insert(UserAnsere).values({
+        mockIDRef: interviewData?.mockID,
+        question: mockInterviewQuestion[activeQuestionIndex]?.Question,
+        correctAns: mockInterviewQuestion[activeQuestionIndex]?.answer,
+        userAns: userAnswer,
+        feedback: JsonFeedbackResp?.feedback || "No feedback provided",
+        rating: JsonFeedbackResp?.rating || 0,
+        userEmail: user?.primaryEmailAddress?.emailAddress,
+        created: moment().format("DD-MM-yyyy"),
+      });
+  
+      if (resp) {
+        toast("User Answer recorded successfully");
+        setUserAnswer("");
+        setResults([]);
+      }
+    } catch (error) {
+      console.error("Error in UpdateUserAnswer:", error);
+      toast("An error occurred while saving your answer.");
+    } finally {
+      setLoading(false);
+    }
+  
 
   }
   return (

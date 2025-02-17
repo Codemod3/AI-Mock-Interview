@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import QuestionsSection from "./_components/QuestionsSection";
 import RecordAnswerSection from "./_components/RecordAnswerSection";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function StartInterview() {
   const params = useParams(); // ✅ No need to await, it is already available
@@ -72,7 +73,9 @@ function StartInterview() {
       }
 
           {activeQuestionIndex==mockInterviewQuestion?.length-1&&
-          <Button>End Interview</Button>}
+          <Link href={`/dashboard/interview/${interviewData.mockID}/feedback`}>
+          <Button>End Interview</Button>
+          </Link>}
         
       </div>
       
