@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QuestionsSection from "./_components/QuestionsSection";
 import RecordAnswerSection from "./_components/RecordAnswerSection";
+import { Button } from "@/components/ui/button";
 
 function StartInterview() {
   const params = useParams(); // ✅ No need to await, it is already available
@@ -53,7 +54,26 @@ function StartInterview() {
       activeQuestionIndex={activeQuestionIndex}
       />
 
-      <RecordAnswerSection/>
+      <RecordAnswerSection
+      mockInterviewQuestion={mockInterviewQuestion} 
+      activeQuestionIndex={activeQuestionIndex}
+      interviewData={interviewData}
+      
+      />
+      
+      </div>
+      <div className='flex justify-end gap-6 pt-0'>
+        {activeQuestionIndex>0&&
+        <Button onClick={()=> setActiveQuestionIndex(activeQuestionIndex-1)}>Previous Question</Button>}
+        {activeQuestionIndex!=mockInterviewQuestion?.length-1&&
+        <Button onClick={() => setActiveQuestionIndex(activeQuestionIndex + 1)}>
+        Next Question
+      </Button>
+      }
+
+          {activeQuestionIndex==mockInterviewQuestion?.length-1&&
+          <Button>End Interview</Button>}
+        
       </div>
       
     </div>
