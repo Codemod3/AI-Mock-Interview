@@ -33,7 +33,19 @@
       e.preventDefault()
       setLoading(true)
       console.log(jobDesc,jobPosition,companyName)
-      const InputPrompt="Job Position:"+jobPosition+",Job requirements:"+jobDesc+" Company Name:"+companyName+" depending on this information please give 5 interview question with answer in JSON format, give Question and answer as field in JSON"
+      const InputPrompt = `
+Job Position: ${jobPosition}
+Job Requirements: ${jobDesc}
+Company Name: ${companyName}
+
+Based on the above information, generate exactly 5 interview questions with their corresponding answers.
+Return the output as a JSON array where each element is an object with exactly two fields: "Question" and "Answer".
+
+If you are unable to generate the output due to insufficient or unclear information, return a JSON object with a single field "error" set to "Sorry, I didn't understand".
+
+Do not include any additional text, markdown, or commentary—only the JSON.
+`;
+
 
         const result = await chatSession.sendMessage(InputPrompt);
         const textResponse =await result.response.text();
