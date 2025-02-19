@@ -76,7 +76,7 @@ function HomePage() {
               height={70}
               className="rounded-full "
             />
-            <h3 className="text-lg font-semibold">Allan B Price</h3>
+            <h3 className="text-lg font-semibold">Allan B Prince</h3>
 
           </div>
 
